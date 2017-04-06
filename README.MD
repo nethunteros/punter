@@ -17,6 +17,11 @@ Change the target to domain you are interested in:
 
 ```python main.py -t google.com```
 
+## Credits
+
+* Everyone who built apis/websites this script scrapes form
+* @jmingov for html fixes/putting up with my terrible scripts
+
 TODO: 
 
 * Enable Shodan scanning for each IP

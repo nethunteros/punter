@@ -52,7 +52,6 @@ try:
     shodan_api_key = config.get('API_KEYS', 'shodan_api_key')
 
     logging.info(shodan_api_key)
-    print('Shodan API key: %s' % shodan_api_key)
 except:
     print('Error reading file: %s\nCheck filename or formatting of config file' % config_file)
     exit
@@ -89,6 +88,31 @@ def whois_target(host):
 def main(target):
 
     try:
+
+        print('''
+                         ..,co88oc.oo8888cc,..
+  o8o.               ..,o8889689ooo888o"88888888oooc..
+.88888             .o888896888".88888888o'?888888888889ooo....
+a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
+088P        ..atc88889"".,oo8o.86888888888o 88988889",o888888888888.
+888t  ...coo688889"'.ooo88o88b.'86988988889 8688888'o8888896989^888o
+ 888888888888"..ooo888968888888  "9o688888' "888988 8888868888'o88888
+  ""G8889""'ooo888888888888889 .d8o9889""'   "8688o."88888988"o888888o .
+           o8888'""""""""""'   o8688"          88868. 888888.68988888"o8o.
+           88888o.              "8888ooo.        '8888. 88888.8898888o"888o.
+           "888888'               "888888'          '""8o"8888.8869888oo8888o .
+      . :.:::::::::::.: .     . :.::::::::.: .atc. : ::.:."8888 "888888888888o
+                                                        :..8888,. "88888888888.
+                                                        .:o888.o8o.  "866o9888o
+         ｱu刀ｲ乇尺 = ｱﾑ丂丂ﾉ√乇 んu刀ｲ乇尺                   :888.o8888.  "88."89".
+                                                        . 89  888888    "88":.
+            ENUMERATE THE TARGET                        :.     '8888o
+                                                         .       "8888..
+                                                                   888888o.
+                                                                    "888889,
+                                                             . : :.:::::::.: :.
+        ''')
+
         print("[+] Enumerate subdomains passively")
         subdomains_dict = subdomains(target)
 
@@ -117,16 +141,16 @@ def main(target):
         print(ns)
     print("[+] Get data out of dnsdumpster:")
     for x in subdomains_dict.get('dns_records').get('host'):
-        print('HOST(A): %s' % x)
+        print('[+] HOST (A): %s' % x)
     if subdomains_dict.get('dns_records').get('dns'):
         for x in subdomains_dict.get('dns_records').get('dns'):
-            print('DNS: %s' % x)
+            print('[+] DNS: %s' % x)
     if subdomains_dict.get('dns_records').get('txt'):
         for x in subdomains_dict.get('dns_records').get('txt'):
-            print('TXT: %s' % x)
+            print('[+] TXT: %s' % x)
     if subdomains_dict.get('dns_records').get('mx'):
         for x in subdomains_dict.get('dns_records').get('mx'):
-            print('MX: %s' % x)
+            print('[+] MX: %s' % x)
 
     # Begin HTML generator
     with open(target + now + 'report.html', 'w') as html:
@@ -134,7 +158,7 @@ def main(target):
         <!DOCTYPE html>
         <html>
         ''')
-        html.write('<title>'+ target + now + '</title>')
+        html.write('<title>Site: '+ target + now + '</title>')
         html.write('''
         <head>
             <meta charset="utf-8">
@@ -150,13 +174,15 @@ def main(target):
                     <div class="page-header">
         ''')
         # Add target to banner
-        html.write('\t\t\t<h1>' + target + '</h1></div>\r')
+        html.write('\t\t\t<h1>Site: ' + target + '</h1></div>\r')
         html.write('''
                 </header>
                 <nav class="navbar navbar-default">
                     <div class="container-fluid">
                         <div class="navbar-header"><a class="navbar-brand navbar-link" href="#">Home </a>
-                            <button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+                            <button class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navcol-1">
+                            <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span>
+                            <span class="icon-bar"></span><span class="icon-bar"></span></button>
                         </div>
                         <div class="collapse navbar-collapse" id="navcol-1">
                             <ul class="nav navbar-nav">
@@ -296,7 +322,7 @@ def main(target):
             </div>
             <div class="col-md-6">
             ''')
-        html.write('<p><textarea rows="25" cols="60" readonly>' + whois_text + '</textarea>')
+        html.write('<p><p><span>WHOIS Info:</span><p><textarea rows="25" cols="50" readonly>' + whois_text + '</textarea>')
         html.write('''
             </div>
         </div>
@@ -304,26 +330,29 @@ def main(target):
 
         <div class="container">
         <hr>
+        <b>
+        <span id="reversewhois">Reverse WHOIS</span>
+        </b>
+        <p>
+        <p>
         ''')
 
         # We have a list of dictionary.  Values in dictionary are a list. So K, V= is a list
 
+        i = 1  # For loop (label each email)
+
         # Loop over list and get each dictionary item
         for emails in email_list:
-            print(emails)
             # Loop over key, value (list)
             for key in emails:
                 print(key)
-                html.write('''
-                <div class="panel-group" role="tablist" aria-multiselectable="true" id="accordion-1">
-                <div class="panel panel-default">
-                <div class="panel-heading" role="tab">
-                    <h4 class="panel-title">
-                    <a role="button" data-toggle="collapse" data-parent="#accordion-1" aria-expanded="true" href="#accordion-1 .item-1">
-                ''')
+                html.write(' <div class="panel-group" role="tablist" aria-multiselectable="true" id="mailAccordion' + str(i) + '">')
+                html.write('''<div class="panel panel-default">''')
+                html.write('<div class="panel-heading" role="tab" id="heading' + str(i) + '> <h4 class="panel-title">')
+                html.write('<a role="button" data-toggle="collapse" data-parent="#mailAccordion-' + str(i) + '" aria-expanded="true" href="#mails_mail' + str(i) +'">')
                 html.write(key)
-                html.write('''</a></h4></div>
-                <div class="panel-collapse collapse in item-1" role="tabpanel">
+                html.write('</a></h4></div><div class="panel-collapse" id="mails_mail' + str(i) + '" role="tabpanel">')
+                html.write('''
                     <div class="panel-body"><span> </span>
                         <div class="table-responsive">
                             <table class="table">
@@ -334,6 +363,10 @@ def main(target):
                                 </thead>
                                 <tbody>
                 ''')
+
+                # Add 1 to i for each loop
+                i += 1
+
                 # For each value add a cell
                 for domains in emails.itervalues():
                     print(domains)

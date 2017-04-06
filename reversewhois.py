@@ -1,6 +1,8 @@
 import requests
 import socket
 from bs4 import BeautifulSoup
+from time import sleep
+
 
 '''
 Taken an modified from:
@@ -23,11 +25,10 @@ def query_rwhois(search_terms, remove_entries=True):
         Scrape the domains from the reverse whois lookup html table
     """
 
-    print("Retreiving base url: %s" % base_url)
+    print("[+] Retreiving base url: %s" % base_url)
     r = requests.get(url=base_url, headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'})
 
     if r.ok:
-        print("OK")
         soup = BeautifulSoup(r.content, 'html.parser')
 
         domain_table = soup('table')[3]
@@ -47,5 +48,7 @@ def query_rwhois(search_terms, remove_entries=True):
                 except:
                     # case where there is no dns record
                     org_dict[org[0]].remove(domain)
+
+        sleep(3)
 
         return org_dict
