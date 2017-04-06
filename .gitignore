@@ -98,3 +98,5 @@ ENV/
 
 # html generated
 .html
+*.html
+.idea
