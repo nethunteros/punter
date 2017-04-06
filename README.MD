@@ -24,5 +24,8 @@ Change the target to domain you are interested in:
 
 TODO: 
 
+* Enable Cloudflare check (see https://github.com/m0rtem/CloudFail/blob/master/cloudfail.py)
+* Use Crimeflare to find real IP
+* Use ping and curl API  to test if host is up 
 * Enable Shodan scanning for each IP
 * Grab html of site/headers using another service
