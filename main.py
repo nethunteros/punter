@@ -7,9 +7,9 @@ import time
 
 # These are for the lookups
 from dnsdumpster import DNSDumpsterAPI
-import whois
 import reversewhois
-import shodan
+import whois_search
+import shodan_search
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 
@@ -70,20 +70,6 @@ def subdomains(host):
     return dnsdumpster_data
 
 
-'''
-############################################
-#               WHOIS                      #
-############################################
-'''
-def whois_target(host):
-
-    # Technically this is still passive recon
-    # because you still aren't hitting target
-    w = whois.whois(host)
-
-    return w.text, w.emails, w
-
-
 #-- START --#
 def main(target):
 
@@ -117,7 +103,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         subdomains_dict = subdomains(target)
 
         print("[+] Query whois")
-        whois_text, whois_emails, whois_dict = whois_target(target)
+        whois_text, whois_emails, whois_dict = whois_search.whois_target(target)
 
         print("[+] Reverse lookup domains by email then check if IP resolves")
         email_list = []
