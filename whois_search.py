@@ -18,7 +18,7 @@ def whois_target(host):
 def whois_ip(ip):
 
     # Default to not found
-    cidr, range = "Not found"
+    cidr, ranges = "CIDR not found", "Range not found"
 
     # Get whois for IP. Returns a list with dictionary
     ip_dict = IPWhois(ip).lookup_rws()
@@ -27,6 +27,6 @@ def whois_ip(ip):
         cidr = ip_dict['nets'][0].get('cidr')
 
     if ip_dict['nets'][0].get('range'):
-        range = ip_dict['nets'][0].get('range')
+        ranges = ip_dict['nets'][0].get('range')
 
-    return cidr, range
+    return cidr, ranges
