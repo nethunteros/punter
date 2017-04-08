@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 import time
+import re
 
 # These are for the lookups
 from dnsdumpster import DNSDumpsterAPI
@@ -57,6 +58,16 @@ except:
     exit
 
 target = args.target
+
+match = re.search('http:\/\/www\.', target)
+match2 = re.search('www\.', target)
+
+if match:
+    print('[-] Remove http://www. from target for best results')
+    exit()
+elif match2:
+    print('[-] Remove www from subdomain')
+    exit()
 
 '''
 ############################################
