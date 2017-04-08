@@ -23,7 +23,7 @@ def whois_ip(ip):
     # Get whois for IP. Returns a list with dictionary
     ip_dict = IPWhois(ip).lookup_rws()
 
-    if ip_dict['nets'][0].get('cidr')
+    if ip_dict['nets'][0].get('cidr'):
         cidr = ip_dict['nets'][0].get('cidr')
 
     if ip_dict['nets'][0].get('range'):
