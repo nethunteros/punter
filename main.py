@@ -7,7 +7,7 @@ import time
 import re
 
 # These are for the lookups
-from dnsdumpster import DNSDumpsterAPI
+import subdomains
 import reversewhois
 import whois_search
 import shodan_search
@@ -69,17 +69,6 @@ elif match2:
     print('[-] Remove www from subdomain')
     exit()
 
-'''
-############################################
-#               SUBDOMAINS                 #
-############################################
-'''
-def subdomains(host):
-
-    dnsdumpster_data = DNSDumpsterAPI.DNSDumpsterAPI().search(host)
-
-    return dnsdumpster_data
-
 
 #-- START --#
 def main(target):
@@ -111,7 +100,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         ''')
 
         print("[+] Enumerate subdomains passively")
-        subdomains_dict = subdomains(target)
+        subdomains_dict = subdomains.subdomains_search(target)
 
         print("[+] Query whois")
         whois_text, whois_emails, whois_dict = whois_search.whois_target(target)
