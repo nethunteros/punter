@@ -10,6 +10,8 @@ import re
 import subdomains
 import reversewhois
 import whois_search
+import crt_sh
+import dns_resolve
 import shodan_search
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
@@ -137,6 +139,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
     if subdomains_dict.get('dns_records').get('mx'):
         for x in subdomains_dict.get('dns_records').get('mx'):
             print('[+] MX: %s' % x)
+    print("[+] Checking for ssl certs for any subdomains using crt.sh")
+    crtsh_results = crt_sh.req_crtsh(target)
 
     # Begin HTML generator
     with open(target + now + 'report.html', 'w') as html:
@@ -308,7 +312,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
             <div class="col-md-6">
             ''')
-        html.write('<p><p><span>WHOIS Info:</span><p><textarea rows="25" cols="50" readonly>' + whois_text + '</textarea>')
+        html.write('<p><p><span>WHOIS Info:</span><p><code>' + whois_text + '</code>')
         html.write('''
             </div>
         </div>
@@ -367,6 +371,29 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 </div>
             </div>
             ''')
+        html.write('''
+        <div class="container"><span><strong>SSL Certs from CRT.SH</strong></span>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Subdomain </th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>''')
+        if crtsh_results:
+            for subdomain in crtsh_results:
+                html.write('<tr><td>' + subdomain + '</td><td>' + dns_resolve.dns_query(subdomain) + '</td></tr>' )
+        else:
+            html.write('<tr><td>No results found</td><td></td></tr>')
+
+            html.write('''
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ''')
 
         html.write('''
         </div>

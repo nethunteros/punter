@@ -1,4 +1,3 @@
-import urllib
 import requests
 from bs4 import BeautifulSoup
 
@@ -46,6 +45,5 @@ def req_crtsh(search_string):
             return remove_wildcard_list
 
         except:
-            print("error retriving information")
 
-req_crtsh("digg.com")
+            print("error retriving information")
