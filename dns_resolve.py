@@ -1,5 +1,6 @@
 import dns.resolver
 import random
+from time import sleep
 
 
 def dns_query(search_term):
@@ -22,9 +23,12 @@ def dns_query(search_term):
 
         print("[+] Resolved %s to %s " % (search_term, ip))
 
+        sleep(2)
+
         return ip
 
     except:
+
         print("[-] Could not resolve %s" % search_term)
 
         return "Not resolved"

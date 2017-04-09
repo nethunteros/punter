@@ -104,7 +104,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         print("[+] Enumerate subdomains passively")
         subdomains_dict = subdomains.subdomains_search(target)
 
-        print("[+] Query whois")
+        print("[+] Querying whois info")
         whois_text, whois_emails, whois_dict = whois_search.whois_target(target)
 
         print("[+] Reverse lookup domains by email then check if IP resolves")
@@ -123,10 +123,10 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
     print("[+] Domain: %s" % subdomains_dict.get('domain'))
     print("[+] Emails found in WHOIS data:")
     for email in whois_emails:
-        print(email)
+        print("[+] Email found: %s" % email)
     print("[+] Name servers found in WHOIS data:")
     for ns in whois_dict.name_servers:
-        print(ns)
+        print("[+] Name server: %s " % ns)
     print("[+] Get data out of dnsdumpster:")
     for x in subdomains_dict.get('dns_records').get('host'):
         print('[+] HOST (A): %s' % x)
@@ -154,7 +154,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>research</title>
-            <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+            <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.css">
             <link rel="stylesheet" href="assets/css/styles.css">
         </head>
 
@@ -179,6 +179,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                                 <li class="active" role="presentation"><a href="#dnsdumpster">DNS DUMPSTER</a></li>
                                 <li role="presentation"><a href="#whois">WHOIS </a></li>
                                 <li role="presentation"><a href="#reversewhois">REVERSE WHOIS</a></li>
+                                <li role="presentation"><a href="#SSL_certs">CRT.SH SSL</a></li>
                                 <li role="presentation"><a href="#shodan">SHODAN </a></li>
                             </ul>
                         </div>
@@ -312,12 +313,11 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
             <div class="col-md-6">
             ''')
-        html.write('<p><p><span>WHOIS Info:</span><p><code>' + whois_text + '</code>')
+        html.write('<p><p><span>WHOIS Info:</span><p><textarea rows="25" cols="50" readonly>' + whois_text + '</textarea>')
         html.write('''
             </div>
         </div>
         </div>
-
         <div class="container">
         <hr>
         <b>
@@ -339,7 +339,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 html.write(' <div class="panel-group" role="tablist" aria-multiselectable="true" id="mailAccordion' + str(i) + '">')
                 html.write('''<div class="panel panel-default">''')
                 html.write('<div class="panel-heading" role="tab" id="heading' + str(i) + '> <h4 class="panel-title">')
-                html.write('<a role="button" data-toggle="collapse" data-parent="#mailAccordion-' + str(i) + '" aria-expanded="true" href="#mails_mail' + str(i) +'">')
+                html.write('<a class="collapsed" role="button" data-toggle="collapse" data-parent="#mailAccordion-' + str(i) + '" aria-expanded="true" href="#mails_mail' + str(i) +'">')
                 html.write(key)
                 html.write('</a></h4></div><div class="panel-collapse" id="mails_mail' + str(i) + '" role="tabpanel">')
                 html.write('''
@@ -372,7 +372,12 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
             ''')
         html.write('''
-        <div class="container"><span><strong>SSL Certs from CRT.SH</strong></span>
+        <p>
+        <hr>
+        <p>
+        <p>
+        <div class="container"><span id="SSL_certs"><strong>SSL Certs from CRT.SH</strong></span>
+        <p>
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -384,10 +389,9 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                     <tbody>''')
         if crtsh_results:
             for subdomain in crtsh_results:
-                html.write('<tr><td>' + subdomain + '</td><td>' + dns_resolve.dns_query(subdomain) + '</td></tr>' )
+                html.write('<tr><td>' + str(subdomain) + '</td><td>' + str(dns_resolve.dns_query(subdomain)) + '</td></tr>' )
         else:
-            html.write('<tr><td>No results found</td><td></td></tr>')
-
+            html.write('<tr><td>No results found</td><td>No results found</td></tr>')
             html.write('''
                     </tbody>
                 </table>
