@@ -16,6 +16,8 @@ import dns_resolve
 import shodan_search
 import crimeflaredb
 import haveibeenpwned
+import ping
+import curl
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 
@@ -134,7 +136,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         for email in whois_emails:
 
             # Add list of most popular hosting companies
-            ignore_emails = ['abuse@godaddy.com']
+            ignore_emails = ['abuse@godaddy.com',
+                             'abuse@enom.com']
 
             if email in ignore_emails:
                 print("[!] Skipping email: %s" % email)
@@ -496,23 +499,45 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                             </tr>
                         </thead>
                         <tbody>''')
-        for ip in cloudflare_ips:
-            crime_ip = subdomains.crimeflare(ip)
+            crime_ip = subdomains.crimeflare(target)
             if crime_ip:
-                print("[+] Target IP: %s | Discovered IP: %s" % (ip, crime_ip))
-                html.write('<tr><td>' + ip + '</td><td>'+ crime_ip + '</td></tr>')
+                print("[+] Target IP: %s | Discovered IP: %s" % (target, crime_ip))
+                html.write('<tr><td>' + target + '</td><td>'+ crime_ip + '</td></tr>')
             else:
-                html.write('<tr><td>' + ip + '</td><td>Unresolved IP</td></tr>')
+                html.write('<tr><td>' + target + '</td><td>Unresolved IP</td></tr>')
         html.write('''
                     </tbody>
                 </table>
             </div>
         </div>
         ''')
-
-        # Shodan scanning here. Ip range lookups.
-        #for ip in not_cloudflare_ips:
-        #    print(ip)
+        if not_cloudflare_ips:
+            html.write('''
+            <p>
+            <hr>
+            <p>
+            <p>
+            <div class="container"><span id="crimeflare"><strong>IP Breakdown</strong></span>
+            <p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>IP </th>
+                                <th>Ping</th>
+                                <th>Curl</th>
+                                <th>Shodan</th>
+                            </tr>
+                        </thead>
+                        <tbody>''')
+            for ip in not_cloudflare_ips:
+                html.write('<tr><td>' + ip + '</td><td>'+ ping.ping(ip) + '</td><td>' + curl.curl(ip) +'</td><td></td></tr>')
+        html.write('''
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ''')
 
         html.write('''
         </div>
