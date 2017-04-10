@@ -192,7 +192,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                     <div class="page-header">
         ''')
         # Add target to banner
-        html.write('\t\t\t<h1>Site: ' + target + '</h1></div>\r')
+        html.write('\t\t\t<h1>Site: ' + target + '</h1> Scan conducted on: ' + now + '</div>\r')
         html.write('''
                 </header>
                 <nav class="navbar navbar-default">
@@ -510,6 +510,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         </div>
         ''')
 
+        # Shodan scanning here. Ip range lookups.
         #for ip in not_cloudflare_ips:
         #    print(ip)
 
