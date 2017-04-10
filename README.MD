@@ -1,11 +1,19 @@
 # Punter
 
-A quick little python script I wrote to take DNS Dumpster and WHOIS data and run a reverse whois on results.
+Punter (passive hunter) helps with the first step in footprinting a domain.  The idea is not to touch the target domain but passively find a good initial amount of information and put it into an easy to view report.  It uses:
+
+* DNS Dumpster
+* Whois
+* Reverse whois on email
+* Haveibeenpwned lookup on emails found
+* CRT.sh to find subdomains
+* Crimeflare to uncover true IP's behind Cloudflare
+* TODO: Shodan scans, net range from Whois
+
+Whois and DNS lookups are still down on host, not through an API so if you are worried about that take precautions.  Otherwise, all other lookups are down using other services.
+
 A HTML report is generated with results, just double click and open it.
 
-Plans are to add shodan scanning for each resolved IP using the Shodan API (see todo at bottom)
-
-Be nice and don't spam these services.  This is just something I threw together to get snapshot of domain in one place.
 
 ## Setup
 
@@ -24,8 +32,6 @@ Change the target to domain you are interested in:
 
 TODO: 
 
-* Enable Cloudflare check (see https://github.com/m0rtem/CloudFail/blob/master/cloudfail.py)
-* Use Crimeflare to find real IP
 * Use ping and curl API  to test if host is up 
 * Enable Shodan scanning for each IP
 * Grab html of site/headers using another service
