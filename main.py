@@ -469,19 +469,49 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 print("[+] Subdomain: %s | Resolved IP: %s | Cloudflare: %s" % (str(subdomain), resolved_ip, resolved_ip_cloudflare))
         else:
             html.write('<tr><td>No results found</td><td>No results found</td></tr>')
+        html.write('''
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ''')
+        # Remove duplicate IPs from both lists
+        not_cloudflare_ips = list(set(not_cloudflare_ips))
+        cloudflare_ips = list(set(cloudflare_ips))
+
+        if cloudflare_ips:
             html.write('''
+            <p>
+            <hr>
+            <p>
+            <p>
+            <div class="container"><span id="crimeflare"><strong>Crimeflare</strong></span>
+            <p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cloudflare IP </th>
+                                <th>Resolved IP (Crimeflare)</th>
+                            </tr>
+                        </thead>
+                        <tbody>''')
+        for ip in cloudflare_ips:
+            crime_ip = subdomains.crimeflare(ip)
+            if crime_ip:
+                print("[+] Target IP: %s | Discovered IP: %s" % (ip, crime_ip))
+                html.write('<tr><td>' + ip + '</td><td>'+ crime_ip + '</td></tr>')
+            else:
+                html.write('<tr><td>' + ip + '</td><td>Unresolved IP</td></tr>')
+        html.write('''
                     </tbody>
                 </table>
             </div>
         </div>
         ''')
 
-        # Remove duplicate IPs
-        not_cloudflare_ips = list(set(not_cloudflare_ips))
-        '''
-        for ip in not_cloudflare_ips:
-            print(ip)
-        '''
+        #for ip in not_cloudflare_ips:
+        #    print(ip)
 
         html.write('''
         </div>

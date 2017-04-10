@@ -158,3 +158,21 @@ def in_cloudlflare_ip(ip):
             return False
 
     return
+
+
+def crimeflare(target):
+    with open("data/ipout", "r") as ins:
+        crimeFoundArray = []
+        for line in ins:
+            lineExploded = line.split(" ")
+            if lineExploded[1] == target:
+                crimeFoundArray.append(lineExploded[2])
+            else:
+                continue
+    if(len(crimeFoundArray) != 0):
+        for foundIp in crimeFoundArray:
+
+            return foundIp.strip()
+
+    else:
+        print("[+] IP %s not found in crimeflare DB" % target)
