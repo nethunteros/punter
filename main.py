@@ -501,6 +501,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                         <tbody>''')
             crime_ip = subdomains.crimeflare(target)
             if crime_ip:
+                not_cloudflare_ips.append(crime_ip)
                 print("[+] Target IP: %s | Discovered IP: %s" % (target, crime_ip))
                 html.write('<tr><td>' + target + '</td><td>'+ crime_ip + '</td></tr>')
             else:
