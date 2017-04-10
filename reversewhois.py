@@ -12,6 +12,7 @@ Removed nmap function
 
 
 def query_rwhois(search_terms, remove_entries=True):
+
     """
     Scrapes a reverse whois page for search_terms provided
     :return: dictionary of organisations and their live domains

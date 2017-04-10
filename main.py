@@ -3,6 +3,7 @@ import ConfigParser as configparser
 import argparse
 import logging
 import os
+import os.path
 import time
 import re
 
@@ -13,6 +14,7 @@ import whois_search
 import crt_sh
 import dns_resolve
 import shodan_search
+import crimeflaredb
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 
@@ -25,20 +27,20 @@ now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 argp = argparse.ArgumentParser()
 
 # Required argument for target
-argp.add_argument ("-t", "--target", dest='target', type=str, required=True);
+argp.add_argument ("-t", "--target", dest='target', type=str, help="Domain to target");
 
 # Add an optional string argument 'config' 
-argp.add_argument ("-c", "--config", dest='config_file', default='config.cfg', type=str);
+argp.add_argument ("-c", "--config", dest='config_file', default='config.cfg', type=str, help="Set config file");
 
-# Add a optional switch (boolean optional argument)
-argp.add_argument ("-v", "--verbose", dest='verbose', default=False, action='store_true',
-    help='Be verbose');
+# Add a optional switch
+argp.add_argument ("-d", "--down", dest='dl', action='store_true', required=False, help="Download crimeflare db");
 
 # Parse command line    
 args = argp.parse_args()
 
-if args.verbose:
-    logging.info('Will produce verbose output')
+if args.dl:
+    crimeflaredb.dl_crimeflare()
+    exit()
 
 here = os.path.realpath('.')
 
@@ -61,20 +63,34 @@ except:
 
 target = args.target
 
-match = re.search('http:\/\/www\.', target)
-match2 = re.search('www\.', target)
 
-if match:
-    print('[-] Remove http://www. from target for best results')
-    exit()
-elif match2:
-    print('[-] Remove www from subdomain')
-    exit()
+#-- CRIMEFLARE DOWNLOAD/UNZIP --#
+def crimedb():
+    crimeflaredb.dl_crimeflare()
 
 
 #-- START --#
 def main(target):
 
+    # Check to see if we have a target
+    if not target:
+        print("[!] No target specified.  See help or other options")
+        exit()
+    else:
+        # If we do then check to make sure its formatted correctly
+        match = re.search('http:\/\/www\.', target)
+        match2 = re.search('www\.', target)
+
+        if match:
+            print('[-] Remove http://www. from target for best results')
+            exit()
+        elif match2:
+            print('[-] Remove www from subdomain')
+            exit()
+
+    if not os.path.exists('data/ipout'):
+        print("[!] Missing crimeflare database!  Downloading and unzipping...")
+        crimedb()
     try:
 
         print('''
@@ -101,6 +117,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                                                              . : :.:::::::.: :.
         ''')
 
+        cloudflare_ips = []
+
         print("[+] Enumerate subdomains passively")
         subdomains_dict = subdomains.subdomains_search(target)
 
@@ -110,7 +128,14 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         print("[+] Reverse lookup domains by email then check if IP resolves")
         email_list = []
         for email in whois_emails:
-            email_list.append(reversewhois.query_rwhois(email))
+
+            # Add list of most popular hosting companies
+            ignore_emails = ['abuse@godaddy.com']
+
+            if email in ignore_emails:
+                print("[!] Skipping email: %s" % email)
+            else:
+                email_list.append(reversewhois.query_rwhois(email))
 
         print(email_list)
 
@@ -148,12 +173,11 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         <!DOCTYPE html>
         <html>
         ''')
-        html.write('<title>Site: '+ target + now + '</title>')
+        html.write('<head><title>Site: '+ target + now + '</title>')
         html.write('''
-        <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>research</title>
+            <link rel="shortcut icon" type="image/png" href="assets/img/favicon.png">
             <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.css">
             <link rel="stylesheet" href="assets/css/styles.css">
         </head>
@@ -198,6 +222,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                             <th data-sortable="true">Reverse DNS</th>
                             <th data-sortable="true">AS </th>
                             <th data-sortable="true">IP</th>
+                            <th data-sortable="true">Cloudflare</th>
                         </tr>
                     </thead>
                     <tbody>''')
@@ -206,6 +231,11 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         # A Records
         if subdomains_dict.get('dns_records').get('host'):
             for x in subdomains_dict.get('dns_records').get('host'):
+
+                # Build list of cloudlfare IPs
+                cloudflare_host_records = subdomains.build_cloudlfare_iplist(x.get('provider'), x.get('ip'))
+                cloudflare_ips.append(cloudflare_host_records)
+
                 html.write('\t\t\t<tr>')
                 html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('header') + '</td>\r')
@@ -214,6 +244,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 html.write('\t\t\t<td>' + x.get('reverse_dns') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('as') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('ip') + '</td>\r')
+                html.write('\t\t\t<td>' + subdomains.check_provider_for_cloudflare(x.get('provider')) + '</td>\r')
                 html.write('\t\t\t</tr>\r')
         else:
                 html.write('\t\t\t<tr>No data found</tr>')
@@ -234,12 +265,18 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                             <th data-sortable="true">Reverse DNS</th>
                             <th data-sortable="true">AS </th>
                             <th data-sortable="true">IP</th>
+                            <th data-sortable="true">Cloudflare</th>
                         </tr>
                     </thead>
                     <tbody>''')
 
         if subdomains_dict.get('dns_records').get('dns'):
             for x in subdomains_dict.get('dns_records').get('dns'):
+
+                # Build list of cloudlfare IPs
+                cloudflare_dns_records = subdomains.build_cloudlfare_iplist(x.get('provider'), x.get('ip'))
+                cloudflare_ips.append(cloudflare_dns_records)
+
                 html.write('\t\t\t<tr>')
                 html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('header') + '</td>\r')
@@ -248,6 +285,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 html.write('\t\t\t<td>' + x.get('reverse_dns') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('as') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('ip') + '</td>\r')
+                html.write('\t\t\t<td>' + subdomains.check_provider_for_cloudflare(x.get('provider')) + '</td>\r')
                 html.write('\t\t\t</tr>')
         else:
             html.write('\t\t\t<tr>No data found</tr>')
@@ -269,12 +307,18 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                             <th data-sortable="true">Reverse DNS</th>
                             <th data-sortable="true">AS </th>
                             <th data-sortable="true">IP</th>
+                            <th data-sortable="true">Cloudflare</th>
                         </tr>
                     </thead>
                     <tbody>''')
 
         if subdomains_dict.get('dns_records').get('mx'):
             for x in subdomains_dict.get('dns_records').get('mx'):
+
+                # Build list of cloudlfare IPs
+                cloudflare_mx_records = subdomains.build_cloudlfare_iplist(x.get('provider'), x.get('ip'))
+                cloudflare_ips.append(cloudflare_mx_records)
+
                 html.write('\t\t\t<tr>')
                 html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('header') + '</td>\r')
@@ -283,6 +327,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 html.write('\t\t\t<td>' + x.get('reverse_dns') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('as') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('ip') + '</td>\r')
+                html.write('\t\t\t<td>' + subdomains.check_provider_for_cloudflare(x.get('provider')) + '</td>\r')
                 html.write('\t\t\t</tr>')
         else:
             html.write('\t\t\t<tr>No data found</tr>')
@@ -335,7 +380,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         for emails in email_list:
             # Loop over key, value (list)
             for key in emails:
-                print(key)
+                print("[+] Emails: %s" % key)
                 html.write(' <div class="panel-group" role="tablist" aria-multiselectable="true" id="mailAccordion' + str(i) + '">')
                 html.write('''<div class="panel panel-default">''')
                 html.write('<div class="panel-heading" role="tab" id="heading' + str(i) + '> <h4 class="panel-title">')
@@ -359,9 +404,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
 
                 # For each value add a cell
                 for domains in emails.itervalues():
-                    print(domains)
                     for v in domains:
-                        print(v)
+                        print("[+] Domain associated with email %s: %s" % (key, v))
                         html.write('<tr><td>' + v + '</td></tr>')
                 html.write('''
                                 </tbody>
@@ -384,12 +428,28 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                         <tr>
                             <th>Subdomain </th>
                             <th>IP</th>
+                            <th>Cloudflare</th>
                         </tr>
                     </thead>
                     <tbody>''')
         if crtsh_results:
+            print("[+] CRT SH Results:")
             for subdomain in crtsh_results:
-                html.write('<tr><td>' + str(subdomain) + '</td><td>' + str(dns_resolve.dns_query(subdomain)) + '</td></tr>' )
+                resolved_ip = str(dns_resolve.dns_query(subdomain))
+
+                # Holy double negative! (aka If this IP resolved then check from cloudlflare)
+                if not "Not resolved" in resolved_ip:
+                    check_resolved_ip = subdomains.in_cloudlflare_ip(resolved_ip)
+                    if check_resolved_ip:
+                        resolved_ip_cloudflare = "Cloudflare enabled"
+                        cloudflare_ips.append(resolved_ip)
+                    else:
+                        resolved_ip_cloudflare = "Not cloudflare"
+                else:
+                    resolved_ip_cloudflare = "Not resolved"
+
+                html.write('<tr><td>' + str(subdomain) + '</td><td>' + resolved_ip + '</td><td>'+ resolved_ip_cloudflare + '</td></tr>' )
+                print("[+] Subdomain: %s | Resolved IP: %s | Cloudflare: %s" % (str(subdomain), resolved_ip, resolved_ip_cloudflare))
         else:
             html.write('<tr><td>No results found</td><td>No results found</td></tr>')
             html.write('''
