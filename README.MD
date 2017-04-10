@@ -8,12 +8,10 @@ Punter (passive hunter) helps with the first step in footprinting a domain.  The
 * Haveibeenpwned lookup on emails found
 * CRT.sh to find subdomains
 * Crimeflare to uncover true IP's behind Cloudflare
-* TODO: Shodan scans, net range from Whois
 
-Whois and DNS lookups are still down on host, not through an API so if you are worried about that take precautions.  Otherwise, all other lookups are down using other services.
+Whois and DNS lookups are still done on the host, not through an API, so if you are worried about that take precautions.  Otherwise, all other lookups are down using other services.
 
-A HTML report is generated with results, just double click and open it.
-
+After the scan an HTML report is generated with results, just double click and open it.
 
 ## Setup
 
@@ -30,8 +28,9 @@ Change the target to domain you are interested in:
 * Everyone who built apis/websites this script scrapes form
 * @jmingov for html fixes/putting up with my terrible scripts
 
-TODO: 
+## TODO: 
 
 * Use ping and curl API  to test if host is up 
 * Enable Shodan scanning for each IP
 * Grab html of site/headers using another service
+* Net range from Whois
