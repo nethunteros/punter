@@ -35,6 +35,7 @@ def dl_crimeflare():
 
         f.close()
         unzip_db(file_name)
+        os.remove(file_name)
     except:
         print("[!] Error downloading crimeflaredb!")
         exit()

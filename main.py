@@ -15,6 +15,7 @@ import crt_sh
 import dns_resolve
 import shodan_search
 import crimeflaredb
+import haveibeenpwned
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 
@@ -117,7 +118,10 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                                                              . : :.:::::::.: :.
         ''')
 
+
+        # Lists to hold our ips
         cloudflare_ips = []
+        not_cloudflare_ips = []
 
         print("[+] Enumerate subdomains passively")
         subdomains_dict = subdomains.subdomains_search(target)
@@ -177,7 +181,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         html.write('''
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link rel="shortcut icon" type="image/png" href="assets/img/favicon.png">
+            <link rel="shortcut icon" type="image/png" href="assets/img/favicon.ico">
             <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.css">
             <link rel="stylesheet" href="assets/css/styles.css">
         </head>
@@ -234,7 +238,10 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
 
                 # Build list of cloudlfare IPs
                 cloudflare_host_records = subdomains.build_cloudlfare_iplist(x.get('provider'), x.get('ip'))
-                cloudflare_ips.append(cloudflare_host_records)
+                if cloudflare_host_records:
+                    cloudflare_ips.append(cloudflare_host_records)
+                else:
+                    not_cloudflare_ips.append(x.get('ip'))
 
                 html.write('\t\t\t<tr>')
                 html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
@@ -275,7 +282,10 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
 
                 # Build list of cloudlfare IPs
                 cloudflare_dns_records = subdomains.build_cloudlfare_iplist(x.get('provider'), x.get('ip'))
-                cloudflare_ips.append(cloudflare_dns_records)
+                if cloudflare_dns_records:
+                    cloudflare_ips.append(cloudflare_dns_records)
+                else:
+                    not_cloudflare_ips.append(x.get('ip'))
 
                 html.write('\t\t\t<tr>')
                 html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
@@ -317,7 +327,10 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
 
                 # Build list of cloudlfare IPs
                 cloudflare_mx_records = subdomains.build_cloudlfare_iplist(x.get('provider'), x.get('ip'))
-                cloudflare_ips.append(cloudflare_mx_records)
+                if cloudflare_mx_records:
+                    cloudflare_ips.append(cloudflare_mx_records)
+                else:
+                    not_cloudflare_ips.append(x.get('ip'))
 
                 html.write('\t\t\t<tr>')
                 html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
@@ -342,13 +355,16 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                         <thead>
                             <tr>
                                 <th id="whois">Emails Found in WHOIS</th>
+                                <th id="whois">Have I Been Pwned?</th>
                             </tr>
                         </thead>
                         <tbody>
         ''')
         if whois_emails:
             for email in whois_emails:
-                html.write('\t\t\t<tr><td>' + email + '</td></tr>\r')
+                pwned_email = haveibeenpwned.pwned_email_check(email)
+                html.write('\t\t\t<tr><td>' + email + '</td><td>' + pwned_email + '</td></tr>\r')
+                print("[+] Whois email %s | Pwned: %s" % (email, pwned_email))
         else:
             html.write('\t\t\t<tr><td>No emails found</td></tr>\r')
         html.write('''
@@ -445,6 +461,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                         cloudflare_ips.append(resolved_ip)
                     else:
                         resolved_ip_cloudflare = "Not cloudflare"
+                        not_cloudflare_ips.append(resolved_ip)
                 else:
                     resolved_ip_cloudflare = "Not resolved"
 
@@ -458,6 +475,13 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
         </div>
         ''')
+
+        # Remove duplicate IPs
+        not_cloudflare_ips = list(set(not_cloudflare_ips))
+        '''
+        for ip in not_cloudflare_ips:
+            print(ip)
+        '''
 
         html.write('''
         </div>
