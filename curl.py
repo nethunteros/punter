@@ -3,18 +3,23 @@ import requests
 
 def curl(domain):
 
-    curl_server = 'https://helloacm.com/api/curl/?url=http://'
+    try:
 
-    # https://helloacm.com/api/curl/?url=https://google.com
-    base_url = curl_server + str(domain)
+        curl_server = 'https://helloacm.com/api/curl/?url=http://'
 
-    print("[+] Requesting curl from: %s" % base_url)
-    r = requests.get(base_url, headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'})
+        # https://helloacm.com/api/curl/?url=https://google.com
+        base_url = curl_server + str(domain)
 
-    json_result = r.json()
+        print("[+] Requesting curl from: %s" % base_url)
+        r = requests.get(base_url, headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'})
 
-    # API Rate limits to 1 second but we are nicer than that
-    print('[+] Sleeping for five seconds')
-    sleep(5)
+        json_result = r.json()
 
-    return str(json_result)
+        # API Rate limits to 1 second but we are nicer than that
+        print('[+] Sleeping for five seconds')
+        sleep(5)
+
+        return str(json_result)
+
+    except:
+        print("[!] Error getting CURL response")

@@ -5,21 +5,27 @@ import random
 
 def ping(domain):
 
-    ping_servers =[ "https://helloacm.com/api/ping/?host=",
-                    "https://uploadbeta.com/api/ping/?host=",
-                    "https://happyukgo.com/api/ping/?host=" ]
+    try:
 
-    server = random.choice(ping_servers)
+        ping_servers =[ "https://helloacm.com/api/ping/?host=",
+                        "https://uploadbeta.com/api/ping/?host=",
+                        "https://happyukgo.com/api/ping/?host=" ]
 
-    # https://helloacm.com/api/ping/?host=HelloACM.com
-    base_url = server + str(domain)
+        server = random.choice(ping_servers)
 
-    print("[+] Requesting ping from: %s" % base_url)
-    r = requests.get(base_url, headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'})
+        # https://helloacm.com/api/ping/?host=HelloACM.com
+        base_url = server + str(domain)
 
-    json_result = r.json()
+        print("[+] Requesting ping from: %s" % base_url)
+        r = requests.get(base_url, headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'})
 
-    print('[+] Sleeping for five seconds')
-    sleep(5)
+        json_result = r.json()
 
-    return str(json_result)
+        print('[+] Sleeping for five seconds')
+        sleep(5)
+
+        return str(json_result)
+
+    except:
+
+        print("[!] Error getting ping response")

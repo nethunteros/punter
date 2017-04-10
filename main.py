@@ -531,7 +531,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                         </thead>
                         <tbody>''')
             for ip in not_cloudflare_ips:
-                html.write('<tr><td>' + ip + '</td><td>'+ ping.ping(ip) + '</td><td>' + curl.curl(ip) +'</td><td></td></tr>')
+                html.write('<tr><td>' + ip + '</td><td>'+ ping.ping(ip) + '</td><td>add curl (todo)</td><td>add shodan (todo)</td></tr>')
         html.write('''
                     </tbody>
                 </table>
