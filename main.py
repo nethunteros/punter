@@ -32,13 +32,13 @@ argp = argparse.ArgumentParser()
 # Required argument for target
 argp.add_argument ("-t", "--target", dest='target', type=str, help="Domain to target");
 
-# Add an optional string argument 'config' 
+# Add an optional string argument 'config'
 argp.add_argument ("-c", "--config", dest='config_file', default='config.cfg', type=str, help="Set config file");
 
 # Add a optional switch
 argp.add_argument ("-d", "--down", dest='dl', action='store_true', required=False, help="Download crimeflare db");
 
-# Parse command line    
+# Parse command line
 args = argp.parse_args()
 
 if args.dl:
@@ -134,6 +134,10 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
 
         print("[+] Reverse lookup domains by email then check if IP resolves")
         email_list = []
+
+        if isinstance(whois_emails, basestring):
+            whois_emails = [whois_emails]
+
         for email in whois_emails:
 
             # Add list of most popular hosting companies
