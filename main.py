@@ -57,6 +57,7 @@ config = configparser.ConfigParser(defaults = {'here': here})
 config.read(config_file)
 
 try:
+    shodan_enabled = config.get('SERVICE', 'enable_shodan')
     shodan_api_key = config.get('API_KEYS', 'shodan_api_key')
 
     logging.info(shodan_api_key)
@@ -136,7 +137,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         for email in whois_emails:
 
             # Add list of most popular hosting companies
-            ignore_emails = ['abuse@godaddy.com',
+            ignore_emails = ['abuse@godaddy.com', 'abusecomplaints@markmonitor.com',
                              'abuse@enom.com']
 
             if email in ignore_emails:
@@ -377,7 +378,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
             <div class="col-md-6">
             ''')
-        html.write('<p><p><span>WHOIS Info:</span><p><textarea rows="25" cols="50" readonly>' + whois_text + '</textarea>')
+        html.write('<p><p><span>WHOIS Info:</span><p><pre>' + whois_text + '</pre>')
         html.write('''
             </div>
         </div>
@@ -532,7 +533,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                         </thead>
                         <tbody>''')
             for ip in not_cloudflare_ips:
-                html.write('<tr><td>' + ip + '</td><td>'+ ping.ping(ip) + '</td><td>add curl (todo)</td><td>add shodan (todo)</td></tr>')
+                html.write('<tr><td>' + ip + '</td><td><pre>'+ ping.ping(ip) + '</pre></td><td>add curl (todo)</td><td>add shodan (todo)</td></tr>')
         html.write('''
                     </tbody>
                 </table>
