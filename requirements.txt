@@ -1,5 +1,5 @@
 dnsdumpster
 shodan
 python-whois
-BeautifulSoup
+bs4
 IPWhois
