@@ -135,19 +135,26 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         print("[+] Reverse lookup domains by email then check if IP resolves")
         email_list = []
 
-        if isinstance(whois_emails, basestring):
-            whois_emails = [whois_emails]
+        if whois_emails:
 
-        for email in whois_emails:
+            print("[+] Emails found in whois")
 
-            # Add list of most popular hosting companies
-            ignore_emails = ['abuse@godaddy.com', 'abusecomplaints@markmonitor.com',
-                             'abuse@enom.com']
+            if isinstance(whois_emails, basestring):
+                whois_emails = [whois_emails]
 
-            if email in ignore_emails:
-                print("[!] Skipping email: %s" % email)
-            else:
-                email_list.append(reversewhois.query_rwhois(email))
+            for email in whois_emails:
+
+                # Add list of most popular hosting companies
+                ignore_emails = ['abuse@godaddy.com', 'abusecomplaints@markmonitor.com',
+                                 'abuse@enom.com']
+
+                if email in ignore_emails:
+                    print("[!] Skipping email: %s" % email)
+                else:
+                    print("[+]Found email: %s" % email)
+                    email_list.append(reversewhois.query_rwhois(email))
+        else:
+            print("[!] No emails found in whois! Skipping")
 
         print(email_list)
 
@@ -158,9 +165,6 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
     # Output data into something redable
     print("[+] Target: %s" % target)
     print("[+] Domain: %s" % subdomains_dict.get('domain'))
-    print("[+] Emails found in WHOIS data:")
-    for email in whois_emails:
-        print("[+] Email found: %s" % email)
     print("[+] Name servers found in WHOIS data:")
     for ns in whois_dict.name_servers:
         print("[+] Name server: %s " % ns)
