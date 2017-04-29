@@ -377,6 +377,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 print("[+] Whois email %s | Pwned: %s" % (email, pwned_email))
         else:
             html.write('\t\t\t<tr><td>No emails found</td></tr>\r')
+
         html.write('''
                         </tbody>
                     </table>
@@ -419,7 +420,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>Domain </th>
+                                        <th>Domain</th>
+                                        <th>Resolved IP</th
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -431,8 +433,12 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 # For each value add a cell
                 for domains in emails.itervalues():
                     for v in domains:
-                        print("[+] Domain associated with email %s: %s" % (key, v))
-                        html.write('<tr><td>' + v + '</td></tr>')
+                        email_domain_resolve = dns_resolve.dns_query(v)
+                        print("[+] Domain associated with email %s: %s | IP: %s"
+                              % (key, v, str(email_domain_resolve)))
+                        html.write('<tr><td>' + v + '</td>')
+                        html.write('<td>' + str(email_domain_resolve) + '<td></tr>')
+
                 html.write('''
                                 </tbody>
                             </table>
