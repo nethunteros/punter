@@ -17,7 +17,6 @@ import shodan_search
 import crimeflaredb
 import haveibeenpwned
 import ping
-import curl
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 
@@ -60,7 +59,6 @@ try:
     shodan_enabled = config.get('SERVICE', 'enable_shodan')
     shodan_api_key = config.get('API_KEYS', 'shodan_api_key')
 
-    logging.info(shodan_api_key)
 except:
     print('Error reading file: %s\nCheck filename or formatting of config file' % config_file)
     exit
@@ -151,7 +149,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 if email in ignore_emails:
                     print("[!] Skipping email: %s" % email)
                 else:
-                    print("[+]Found email: %s" % email)
+                    print("[+] Found email: %s" % email)
                     email_list.append(reversewhois.query_rwhois(email))
         else:
             print("[!] No emails found in whois! Skipping")
@@ -533,15 +531,40 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>IP </th>
-                                <th>Ping</th>
-                                <th>Curl</th>
-                                <th>Shodan</th>
+                                <th style="width:5%">IP </th>
+                                <th style="width:30%">Ping</th>
+                                <th style="width:5%">Status</th>
+                                <th style="width:60%">Shodan</th>
                             </tr>
                         </thead>
                         <tbody>''')
             for ip in not_cloudflare_ips:
-                html.write('<tr><td>' + ip + '</td><td><pre>'+ ping.ping(ip) + '</pre></td><td>add curl (todo)</td><td>add shodan (todo)</td></tr>')
+                # Get ping result
+                ping_result = ping.ping(ip)
+
+                if "ttl" in ping_result:
+                    host_status = "Host appears up"
+                else:
+                    host_status = "Host appears down"
+
+                html.write('<tr><td>' + ip + '</td><td><pre>'+ ping_result +
+                           '</pre></td><td>'+ host_status +
+                           '</td><td>')
+
+                # If shodan is enabled, then query shodan
+                if shodan_enabled:
+                    shodan_result = shodan_search.shodan_query(shodan_api_key, ip)
+                    if shodan_result is not "No information":
+                        try:
+                            html.write("<pre>Operating System: %s\n</pre>" % shodan_result.get('os', 'n/a'))
+                            for result in shodan_result['data']:
+                                html.write('<pre>Port: %s\nBanner: %s\n\n</pre>' % (result['port'], result['data']) )
+                        except:
+                            html.write('No information')
+                else:
+                    print("[!] Shodan not enabled in config")
+                    html.write('Shodan not enabled')
+                html.write('</td></tr>')
         html.write('''
                     </tbody>
                 </table>

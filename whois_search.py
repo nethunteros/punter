@@ -1,5 +1,11 @@
 from ipwhois import IPWhois
 import whois
+from time import sleep
+
+# Other options:
+# https://www.whoisxmlapi.com/?domainName=domain.com&outputFormat=json (limit 20)
+# https://www.iana.org/whois?q=domain.com
+
 
 '''
 ############################################
@@ -28,5 +34,7 @@ def whois_ip(ip):
 
     if ip_dict['nets'][0].get('range'):
         ranges = ip_dict['nets'][0].get('range')
+
+    sleep(2)
 
     return cidr, ranges
