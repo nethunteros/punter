@@ -19,6 +19,8 @@ After the scan an HTML report is generated with results, just double click and o
 
 ## Run
 
+If you want to enable Shodan when searching then you need to edit config.cfg.  Change enable to True then add your API key.
+
 Change the target to domain you are interested in:
 
 ```python main.py -t google.com```
@@ -30,7 +32,7 @@ Change the target to domain you are interested in:
 
 ## TODO: 
 
-* Use ping and curl API  to test if host is up 
-* Enable Shodan scanning for each IP
 * Grab html of site/headers using another service
 * Net range from Whois
+* Better unicode fixes
+* Try/except for all types of errors
