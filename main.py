@@ -143,8 +143,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             for email in whois_emails:
 
                 # Add list of most popular hosting companies
-                ignore_emails = ['abuse@godaddy.com', 'abusecomplaints@markmonitor.com',
-                                 'abuse@enom.com']
+                ignore_emails = ['abuse@godaddy.com', 'abusecomplaints@markmonitor.com', 'abuse@web.com', 'DNS_Admin_Mail@amilink.com',
+                                 'abuse@enom.com', 'domainabuse@tucows.com', 'help@hover.com', 'customerservice@networksolutions.com']
 
                 if email in ignore_emails:
                     print("[!] Skipping email: %s" % email)
@@ -164,8 +164,11 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
     print("[+] Target: %s" % target)
     print("[+] Domain: %s" % subdomains_dict.get('domain'))
     print("[+] Name servers found in WHOIS data:")
-    for ns in whois_dict.name_servers:
-        print("[+] Name server: %s " % ns)
+    if whois_dict.name_servers:
+        for ns in whois_dict.name_servers:
+            print("[+] Name server: %s " % ns)
+    else:
+        print("[!] Name server not found!")
     print("[+] Get data out of dnsdumpster:")
     for x in subdomains_dict.get('dns_records').get('host'):
         print('[+] HOST (A): %s' % x)
@@ -547,11 +550,14 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             for ip in not_cloudflare_ips:
                 # Get ping result
                 ping_result = ping.ping(ip)
-
-                if "ttl" in ping_result:
-                    host_status = "Host appears up"
-                else:
-                    host_status = "Host appears down"
+		
+		try:
+                	if "ttl" in ping_result:
+                    		host_status = "Host appears up"
+                	else:
+                    		host_status = "Host appears down"
+		except:
+			host_status = "error with ttl"
 
                 html.write('<tr><td>' + ip + '</td><td><pre>'+ ping_result +
                            '</pre></td><td>'+ host_status +
