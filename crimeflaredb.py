@@ -12,6 +12,7 @@ def dl_crimeflare():
         os.remove('data/ipout')
 
     try:
+        # From http://www.crimeflare.us/zippy.html
         url = 'http://crimeflare.net:82/domains/ipout.zip'
         file_name = url.split('/')[-1]
         u = urllib2.urlopen(url)

@@ -15,7 +15,24 @@ After the scan an HTML report is generated with results, just double click and o
 
 ## Setup
 
-```pip install -r requirements.txt```
+```
+git clone https://github.com/nethunteros/punter
+cd punter
+pip install -r requirements.txt
+
+```
+
+### Setup - Arch Linux
+```
+su
+git clone https://github.com/nethunteros/punter
+cd punter
+pip2 install -r requirements.txt
+pip2 install ipaddr
+
+python2 main.py -t google.com
+
+```
 
 ## Run
 
@@ -36,3 +53,10 @@ Change the target to domain you are interested in:
 * Net range from Whois
 * Better unicode fixes
 * Try/except for all types of errors
+
+## Test
+
+This software is mainly tested under Kali Linux, we recommend use this distribution.
+* Kali Linux, Python 2.7.13 - OK
+* Arch Linux, Python 2.7.13 - OK
+Currently Punter is [not supported under](not-supported.md)
