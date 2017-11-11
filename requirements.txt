@@ -1,4 +1,4 @@
-dnsdumpster
+https://github.com/PaulSec/API-dnsdumpster.com/archive/0.2.tar.gz
 shodan
 python-whois
 bs4
