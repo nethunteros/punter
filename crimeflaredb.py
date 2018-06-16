@@ -13,7 +13,7 @@ def dl_crimeflare():
 
     try:
         # From http://www.crimeflare.us/zippy.html
-        url = 'http://crimeflare.net:82/domains/ipout.zip'
+        url = 'http://crimeflare.net:83/domains/ipout.zip'
         file_name = url.split('/')[-1]
         u = urllib2.urlopen(url)
         f = open(file_name, 'wb')
