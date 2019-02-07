@@ -6,6 +6,7 @@ import os
 import os.path
 import time
 import re
+import json
 
 # These are for the lookups
 import subdomains
@@ -17,6 +18,7 @@ import shodan_search
 import crimeflaredb
 import haveibeenpwned
 import ping
+import virustotal
 
 now = time.strftime("-%m-%w-%y-%H-%M-%S-")
 
@@ -56,8 +58,11 @@ config = configparser.ConfigParser(defaults = {'here': here})
 config.read(config_file)
 
 try:
-    shodan_enabled = config.get('SERVICE', 'enable_shodan')
+    ping_enabled = config.getboolean('PING', 'enable_ping')
+    shodan_enabled = config.getboolean('SERVICE', 'enable_shodan')
     shodan_api_key = config.get('API_KEYS', 'shodan_api_key')
+    virustotal_enabled = config.getboolean('SERVICE', 'enable_virustotal')
+    virustotal_api_key = config.get('API_KEYS', 'virustotal_api_key')
 
 except:
     print('Error reading file: %s\nCheck filename or formatting of config file' % config_file)
@@ -70,6 +75,12 @@ target = args.target
 def crimedb():
     crimeflaredb.dl_crimeflare()
 
+#-- FIX DNSDUMPSTER HTTP/HTTPS --#
+# https://stackoverflow.com/a/3663505
+def rchop(thestring, ending):
+  if thestring.endswith(ending):
+    return thestring[:-len(ending)]
+  return thestring
 
 #-- START --#
 def main(target):
@@ -221,6 +232,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                                 <li role="presentation"><a href="#whois">WHOIS </a></li>
                                 <li role="presentation"><a href="#reversewhois">REVERSE WHOIS</a></li>
                                 <li role="presentation"><a href="#SSL_certs">CRT.SH SSL</a></li>
+                                <li role="presentation"><a href="#virus_total">Virus Total</a></li>
                                 <li role="presentation"><a href="#shodan">SHODAN </a></li>
                             </ul>
                         </div>
@@ -256,9 +268,14 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 else:
                     not_cloudflare_ips.append(x.get('ip'))
 
+                domain_dumpster = rchop(x.get('domain'), 'HTTPS:')
+                domain_dumpster = rchop(domain_dumpster, 'HTTP:')
+                header_dumpster = rchop(x.get('header'), 'HTTPS:')
+                header_dumpster = rchop(header_dumpster, 'HTTP:')
+
                 html.write('\t\t\t<tr>')
-                html.write('\t\t\t<td>' + x.get('domain') + '</td>\r')
-                html.write('\t\t\t<td>' + x.get('header') + '</td>\r')
+                html.write('\t\t\t<td>' + domain_dumpster + '</td>\r')
+                html.write('\t\t\t<td>' + header_dumpster + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('country') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('provider') + '</td>\r')
                 html.write('\t\t\t<td>' + x.get('reverse_dns') + '</td>\r')
@@ -376,8 +393,13 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
         if whois_emails:
             for email in whois_emails:
                 pwned_email = haveibeenpwned.pwned_email_check(email)
-                html.write('\t\t\t<tr><td>' + email + '</td><td>' + pwned_email + '</td></tr>\r')
-                print("[+] Whois email %s | Pwned: %s" % (email, pwned_email))
+                try:
+                    html.write('\t\t\t<tr><td>' + email + '</td><td>' + pwned_email + '</td></tr>\r')
+                    print("[+] Whois email %s | Pwned: %s" % (email, pwned_email))
+                except:
+                    html.write('\t\t\t<tr><td>Error writing whois</td></tr>\r')
+                    print('Error writing whois email')
+                    pass
         else:
             html.write('\t\t\t<tr><td>No emails found</td></tr>\r')
 
@@ -388,7 +410,7 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
             <div class="col-md-6">
             ''')
-        html.write('<p><p><span>WHOIS Info:</span><p><pre>' + whois_text + '</pre>')
+        html.write('<p><p><span>WHOIS Info:</span><p><pre>' + whois_text.encode('utf-8') + '</pre>')
         html.write('''
             </div>
         </div>
@@ -494,6 +516,39 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
             </div>
         </div>
         ''')
+
+        # If Virustotal is enabled, then query Virustotal API
+        if virustotal_enabled:
+            vt_results = virustotal.virustotal_api(target, virustotal_api_key)
+            if vt_results:
+                html.write('''
+                <p>
+                <hr>
+                <p>
+                <p>
+                <div class="container"><span id="virus_total"><strong>Virustotal Subdomain</strong></span>
+                <p>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Subdomain</th>
+                                </tr>
+                            </thead>
+                <tbody>''')
+                print(json.dumps(vt_results, indent=4, separators=(',', ': ')))
+                for item in vt_results:
+                    vt_subdomain = item.replace('.'+target, '')
+                    html.write('<tr><td>' + str(vt_subdomain) + '</td><td></tr>')
+            else:
+                html.write('''<tr><td>No results found</td><td>''')
+        html.write('''
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ''')
+
         # Remove duplicate IPs from both lists
         not_cloudflare_ips = list(set(not_cloudflare_ips))
         cloudflare_ips = list(set(cloudflare_ips))
@@ -542,26 +597,27 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                             <tr>
                                 <th style="width:5%">IP </th>
                                 <th style="width:30%">Ping</th>
-                                <th style="width:5%">Status</th>
                                 <th style="width:60%">Shodan</th>
                             </tr>
                         </thead>
                         <tbody>''')
             for ip in not_cloudflare_ips:
-                # Get ping result
-                ping_result = ping.ping(ip)
-		
-		try:
-                	if "ttl" in ping_result:
-                    		host_status = "Host appears up"
-                	else:
-                    		host_status = "Host appears down"
-		except:
-			host_status = "error with ttl"
+
+                if ping_enabled:
+                    # Get ping result
+                    ping_result = ping.ping(ip)
+                    try:
+                        if "ttl" in ping_result:
+                            host_status = "Host appears up"
+                        else:
+                            host_status = "Host appears down"
+                    except:
+                        host_status = "error with ttl"
+                else:
+                    ping_result = "Ping is not enabled"
 
                 html.write('<tr><td>' + ip + '</td><td><pre>'+ ping_result +
-                           '</pre></td><td>'+ host_status +
-                           '</td><td>')
+                               '</pre></td><td>')
 
                 # If shodan is enabled, then query shodan
                 if shodan_enabled:
@@ -576,22 +632,21 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
                 else:
                     print("[!] Shodan not enabled in config")
                     html.write('Shodan not enabled')
-                html.write('</td></tr>')
-        html.write('''
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        ''')
+                    html.write('</td></tr>')
+                    html.write('''
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    ''')
 
-        html.write('''
-        </div>
-        <section></section>
-        </div>
-        <script src="assets/js/jquery.min.js"></script>
-        <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-        </body>
-        </html>''')
-
+                    html.write('''
+                    </div>
+                    <section></section>
+                    </div>
+                    <script src="assets/js/jquery.min.js"></script>
+                    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+                    </body>
+                    </html>''')
 
 main(target)

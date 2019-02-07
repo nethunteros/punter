@@ -4,9 +4,13 @@ from time import sleep
 
 def pwned_email_check(email):
 
-    r = requests.get("https://haveibeenpwned.com/api/v2/breachedaccount/" + email + "?includeUnverified=true", verify=True)
+    headers = {
+        'User-Agent': 'Punter Domain Checker',
+    }
 
-    sleep(3)  # Rate limits at 1.5 seconds.  But were nice....
+    r = requests.get("https://haveibeenpwned.com/api/v2/breachedaccount/" + email + "?includeUnverified=true", verify=True, headers=headers)
+
+    sleep(5)  # Rate limits at 1.5 seconds.  But were nice....
 
     # https://haveibeenpwned.com/API/v2
 

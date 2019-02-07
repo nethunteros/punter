@@ -24,7 +24,8 @@ def req_crtsh(search_string):
                 cells = row.find_all('td', limit=5)
 
                 if cells:
-                    name = cells[3].text
+                    #print(cells) # DEBUG
+                    name = cells[4].text
                     subdomain_list.append(name)
 
             # Remove duplicate domains from list
